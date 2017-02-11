@@ -1,6 +1,7 @@
 package myhttp
 
 import (
+	//	"fmt"
 	"strings"
 )
 
@@ -42,14 +43,16 @@ func (m Http_message) String() string {
 func ParseHttpMessage(message string) *Http_message {
 	hmsg := NewHttp_message()
 	msg_arr := strings.Split(message, "\n")
-	hmsg.SetStatus(msg_arr[0])
+	hmsg.SetStatus(strings.Trim(msg_arr[0], "\r"))
 	var i int
 	i = 0
 	for _, m := range msg_arr[1:] {
+		m = strings.Trim(m, "\r")
 		if m == "" {
 			break
 		}
 		kv := strings.SplitN(m, ":", 2)
+
 		key := strings.TrimSpace(kv[0])
 		val := strings.TrimSpace(kv[1])
 		hmsg.AddHeader(key, val)

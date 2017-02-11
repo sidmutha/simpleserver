@@ -7,10 +7,10 @@ import (
 	"net"
 	"os"
 
-	"simpleserver/myhttp"
+	"github.com/sidmutha/simpleserver/myhttp"
 )
 
-func main() {
+func test() {
 
 	//	var hmsg myhttp.Http_message = *myhttp.NewHttp_message()
 	//	hmsg.SetStatus("HTTP/1.1 200 OK")
@@ -38,6 +38,10 @@ If-Modified-Since: Wed, 22 Jul 2009 19:15:56 GMT
 	v, _, _ := hm.GetStatus()
 	fmt.Println(v)
 
+}
+
+func main() {
+
 	port := ":8188"
 
 	ln, err := net.Listen("tcp", port)
@@ -46,7 +50,7 @@ If-Modified-Since: Wed, 22 Jul 2009 19:15:56 GMT
 		os.Exit(1)
 	}
 	fmt.Println("Listening on port" + string(port))
-	buf := make([]byte, 4096)
+	//	buf := make([]byte, 4096)
 
 	for {
 		conn, err := ln.Accept()
@@ -56,9 +60,9 @@ If-Modified-Since: Wed, 22 Jul 2009 19:15:56 GMT
 		}
 		fmt.Println("Accepted from " + conn.RemoteAddr().String())
 		fmt.Println("-------------message------------")
-		conn.Read(buf)
-		fmt.Println(string(buf))
-		fmt.Println("***********/message*************")
+		//conn.Read(buf)
+		//fmt.Println(string(buf))
+		//fmt.Println("***********/message*************")
 		//conn.Write([]byte("<html><body><h1>Hello</h1></body></html>"))
 		/*conn.Write([]byte(`HTTP/1.1 200 OK
 		Date: Mon, 27 Jul 2009 12:28:53 GMT
@@ -74,8 +78,8 @@ If-Modified-Since: Wed, 22 Jul 2009 19:15:56 GMT
 		</body>
 		</html>`))*/
 		//conn.Write([]byte(hmsg.String()))
-		conn.Close()
-		//go handleConnection(conn)
+		//conn.Close()
+		go myhttp.HandleConn(conn)
 	}
 }
 
