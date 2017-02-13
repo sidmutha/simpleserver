@@ -10,6 +10,8 @@ import (
 	"github.com/sidmutha/simpleserver/myhttp"
 )
 
+var rootdir string
+
 func test() {
 
 	//	var hmsg myhttp.Http_message = *myhttp.NewHttp_message()
@@ -41,6 +43,8 @@ If-Modified-Since: Wed, 22 Jul 2009 19:15:56 GMT
 }
 
 func main() {
+
+	rootdir = os.Args[1]
 
 	port := ":8188"
 
@@ -79,25 +83,6 @@ func main() {
 		</html>`))*/
 		//conn.Write([]byte(hmsg.String()))
 		//conn.Close()
-		go myhttp.HandleConn(conn)
+		go myhttp.HandleConn(conn, rootdir)
 	}
-}
-
-func handleConnection(c net.Conn) {
-	buf := make([]byte, 4096)
-
-	for {
-		n, err := c.Read(buf)
-		if err != nil || n == 0 {
-			c.Close()
-			break
-		}
-
-		n, err = c.Write([]byte("<html><body><h1>Hello</h1></body></html>"))
-		if err != nil {
-			c.Close()
-			break
-		}
-	}
-	fmt.Printf("Connection from %v closed.\n", c.RemoteAddr())
 }
