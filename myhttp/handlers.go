@@ -16,23 +16,51 @@ func FileExists(filepath string) bool {
 	return true
 }
 
+func GetExistFilePath(fpath string) (filepath string, err error) {
+	f, e := os.Stat(fpath)
+	filepath = fpath
+	err = nil
+	if e != nil {
+		err = e
+		return
+	}
+	if f.Mode().IsDir() {
+		filepath += "/index.html"
+		fmt.Println("folder requested, looking for index.html")
+		return GetExistFilePath(filepath)
+	}
+	return
+	//	switch mode := f.Mode() { // if?
+	//		case mode.IsDir():
+	//			filepath += "/index.html"
+	//			return GetExistFilePath(filepath)
+	////		case mode.IsRegular():
+	////			filepath
+	//	}
+}
+
 func HandleGET(m *Http_message) *Http_message {
-	fmt.Println("Handle GET received: ")
+	fmt.Println("GET: ")
 	fmt.Println(m)
-	fmt.Println("------------------")
+	fmt.Println("---")
 
 	response := NewHttp_message()
 
-	filepath := rootdir + path
-	if !FileExists(filepath) {
-		response.SetStatus("HTTP/1.1 404 Not Found Dude")
+	filepath, err := GetExistFilePath(rootdir + path)
+
+	if err != nil {
+		if os.IsNotExist(err) { // file doesn't exist, 404
+			response.SetStatus("HTTP/1.1 404 Not Found Dude")
+		} else { // some other error, 500
+			response.SetStatus("HTTP/1.1 500 Internal Server Error")
+		}
 		// set custom 404 page?
 		return response
 	}
 
-	dat, err := ioutil.ReadFile(filepath)
+	data, err := ioutil.ReadFile(filepath)
 
-	if err != nil {
+	if err != nil { // error reading file
 		response.SetStatus("HTTP/1.1 500 Internal Server Error")
 		// set custom 500 page?
 		return response
@@ -43,7 +71,7 @@ func HandleGET(m *Http_message) *Http_message {
 	//response.AddHeader("Last-Modified", "Wed, 22 Jul 2009 19:15:56 GMT")
 	response.AddHeader("Content-Type", "text/html")
 	//response.SetBody("<html><body><h1>Hi</h1></body></html>")
-	response.SetBody(string(dat))
+	response.SetBody(string(data))
 	return response
 }
 
@@ -63,7 +91,9 @@ func HandleConn(conn net.Conn, rdir string) {
 
 	if verb == "GET" {
 		response := HandleGET(http_message)
-		conn.Write([]byte(response.String()))
+		response_str := response.String()
+		conn.Write([]byte(response_str))
+		fmt.Println("Sending response: \n" + response_str + "---\n")
 	}
 
 	// keep-alive : time out before closing?
